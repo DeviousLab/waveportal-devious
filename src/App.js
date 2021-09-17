@@ -61,20 +61,31 @@ export default function App() {
   }
   async function getAllWaves() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
+    const signer = provider.getSigner()
     const waveportalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
-    let waves = await waveportalContract.getAllWaves();
-
-    let wavesCleaned = [];
+    let waves = await waveportalContract.getAllWaves()
+ 
+    let wavesCleaned = []
     waves.forEach(wave => {
+      console.log("wave", wave)
       wavesCleaned.push({
-        address: wave.waver,
+        address: wave.address,
         timestamp: new Date(wave.timestamp * 1000),
         message: wave.message
       })
     })
-    setAllWaves(wavesCleaned);
+    console.log("cleaned", wavesCleaned)
+    setAllWaves(wavesCleaned)
+
+    waveportalContract.on("NewWave", (from, timestamp, message) => {
+      console.log("NewWave", from, timestamp, message)
+      setAllWaves(oldArray => [...oldArray, {
+        address: from,
+        timestamp: new Date(timestamp * 1000),
+        message: message
+      }])
+    })
   }
 
   React.useEffect(() => {
